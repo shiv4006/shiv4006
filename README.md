@@ -1,5 +1,11 @@
 # 💫 About Me:
-Hi, I'm Shivam Kumar 👋<br><br>Full Stack Developer with experience building scalable web applications, AI-powered systems, and financial analytics platforms using React, FastAPI, Node.js, MongoDB, and Azure OpenAI.
+Hi, I'm Shivam Kumar 👋
+
+Full Stack Developer passionate about building scalable products, AI-powered applications, and data-intensive systems.
+
+💻 Next.js • React • FastAPI • Node.js • MongoDB • Electron • Azure OpenAI
+🚀 Financial Analytics • AI Systems • System Design • Performance Optimization
+🏆 LeetCode Knight (2057) | 1100+ Problems Solved
 
 
 ## 🌐 Socials:
