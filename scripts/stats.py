@@ -48,19 +48,50 @@ THEMES = {
 }
 LEVELS = {"NONE": 0, "FIRST_QUARTILE": 1, "SECOND_QUARTILE": 2, "THIRD_QUARTILE": 3, "FOURTH_QUARTILE": 4}
 WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-ICON_URL = "https://cdn.jsdelivr.net/npm/simple-icons@16.30.0/icons/{}.svg"
+ICON_PACKAGES = {"lobe": "@lobehub/icons-static-svg@1.91.0", "si": "simple-icons@16.30.0"}
+CDNS = ["https://cdn.jsdelivr.net/npm/{}/icons/{}.svg", "https://unpkg.com/{}/icons/{}.svg"]
+PATH_DATA = r"[MmZzLlHhVvCcSsQqTtAaEe0-9.,\s+-]+"
 
 # ------------------------------------------------------------------ words (edit these)
 
+HERO = [
+    ("Role", "Full-Stack Developer"),
+    ("Company", "CypherSOL Fintech"),
+    ("Built with AI", "assistants · RAG · search · voice"),
+    ("Learning", "LLMs · Generative AI · RAG · agents"),
+    ("AI tools", "Claude · ChatGPT · Codex · Hugging Face"),
+    ("Stack", "TypeScript · React · Next.js · NestJS"),
+]
 NOW = [
     "Full-stack on six fintech & forensic products",
     "Building AI into forensic tools at CypherSOL",
-    "Sharpening DSA: LeetCode Knight, 1,400+ solved",
+    "Learning LLMs, generative AI and RAG hands-on",
 ]
-NEXT = [
-    "AI agents that help investigators follow money",
-    "LLM systems in production: RAG and evals",
-    "More open source, built in public",
+AMBITION = [
+    "Grow from full-stack developer to AI engineer",
+    "Build generative AI products end to end",
+    "Bring LLM agents to fintech & fraud investigation",
+]
+# (stage, status, [(topic, terms)])
+JOURNEY = [
+    ("Built with", "done", [
+        ("LLM APIs & streaming", "Azure OpenAI · Gemini · SSE"),
+        ("Embeddings & vector search", "Transformers · ChromaDB"),
+        ("RAG pipelines", "LlamaIndex · BGE · gpt-oss"),
+        ("Real-time voice AI", "Gemini Live · speech"),
+    ]),
+    ("Learning now", "in progress", [
+        ("LLM fundamentals", "transformers · attention · tokens"),
+        ("Prompt engineering", "few-shot · structured output"),
+        ("Advanced RAG", "chunking · reranking · hybrid"),
+        ("Generative AI", "text · image · multimodal"),
+    ]),
+    ("Up next", "planned", [
+        ("AI agents", "tool use · MCP · multi-agent"),
+        ("Fine-tuning", "LoRA · PEFT · datasets"),
+        ("Evals & guardrails", "LLM-as-judge · safety"),
+        ("LLMOps", "serving · monitoring · cost"),
+    ]),
 ]
 # (name, where, what it does, built with)
 AI_BUILDS = [
@@ -75,8 +106,15 @@ AI_BUILDS = [
     ("Real-time voice agent", "shiv4006/gemini-voice-interface", "Low-latency voice conversations you can interrupt",
      ["Gemini Live", "WebSockets"]),
 ]
-TOOLKIT = ["googlegemini", "claude", "huggingface", "streamlit", "fastapi"]
-TOOLKIT_MORE = ["+ Azure OpenAI · LlamaIndex", "ChromaDB · Nebius"]
+SHIPPED_CONCEPTS = ["LLM APIs", "streaming", "embeddings", "vector DB", "RAG", "speech", "real-time"]
+# (row label, [(icon, name)]); icons are "lobe:<name>" (LobeHub) or "si:<name>" (Simple Icons)
+TOOLKIT = [
+    ("AI assistants", [("lobe:claude", "Claude"), ("lobe:claudecode", "Claude Code"), ("lobe:openai", "ChatGPT"),
+                       ("lobe:codex", "Codex"), ("lobe:gemini", "Gemini")]),
+    ("Models & frameworks", [("lobe:huggingface", "Hugging Face"), ("lobe:llamaindex", "LlamaIndex"),
+                             ("lobe:azure", "Azure OpenAI"), ("lobe:nebius", "Nebius AI"), ("si:streamlit", "Streamlit")]),
+]
+TOOLKIT_MORE = "Sentence Transformers · ChromaDB · BGE embeddings · gpt-oss · FastAPI"
 
 CSS = (
     "text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif}"
@@ -247,15 +285,22 @@ def shade(color, k):
 
 
 @functools.lru_cache(maxsize=None)
-def icon_path(name):
-    """The path of a 24x24 Simple Icons logo, or None if it can't be fetched."""
-    try:
-        with urllib.request.urlopen(ICON_URL.format(name), timeout=30) as resp:
-            svg = resp.read().decode()
-    except OSError:
+def icon_shape(spec):
+    """(fill-rule, paths) of a 24x24 icon such as "lobe:openai", or None if it can't be fetched."""
+    source, name = spec.split(":")
+    svg = ""
+    for cdn in CDNS:
+        try:
+            with urllib.request.urlopen(cdn.format(ICON_PACKAGES[source], name), timeout=30) as resp:
+                svg = resp.read().decode()
+        except OSError:
+            continue
+        if "<svg" in svg[:200]:
+            break
+    paths = re.findall(r'<path\b[^>]*\sd="([^"]+)"', svg)
+    if 'viewBox="0 0 24 24"' not in svg or not paths or not all(re.fullmatch(PATH_DATA, d) for d in paths):
         return None
-    m = re.search(r'\sd="([^"]+)"', svg)
-    return m.group(1) if m and re.fullmatch(r"[MmZzLlHhVvCcSsQqTtAaEe0-9.,\s+-]+", m.group(1)) else None
+    return ("evenodd" if 'fill-rule="evenodd"' in svg else "nonzero"), tuple(paths)
 
 
 def fmt_range(r):
@@ -320,6 +365,14 @@ class Svg:
                  f'V{y + h - r:.1f}Q{x + w:.1f} {y + h:.1f} {x + w - r:.1f} {y + h:.1f}H{x:.1f}Z" '
                  f'fill="{color}"{attrs}/>')
 
+    def icon(self, spec, x, y, size, color):
+        shape = icon_shape(spec)
+        if shape:
+            rule, paths = shape
+            body = "".join('<path d="%s"/>' % d for d in paths)
+            self.add(f'<g transform="translate({x:.1f} {y:.1f}) scale({size / 24:.4f})" fill="{color}" '
+                     f'fill-rule="{rule}">{body}</g>')
+
     def hline(self, x1, x2, y, color="grid"):
         self.add(f'<path d="M{x1:.1f} {y + .5:.1f}H{x2:.1f}" stroke="{self.t[color]}"/>')
 
@@ -353,7 +406,7 @@ def hero(s, t):
             g.add(f'<circle cx="{x}" cy="{y:.1f}" r="9" fill="{t["tile"]}" stroke="{t["accent"]}" stroke-width="1.5"/>')
             g.add(f'<circle class="pulse" style="animation-delay:{li * 0.3 + j * 0.2:.1f}s" cx="{x}" cy="{y:.1f}" '
                   f'r="3.5" fill="{t["live"]}"/>')
-    g.text(155, 336, "// building with AI", 12, cls="mono", anchor="middle")
+    g.text(155, 336, "// learning & building with AI", 12, cls="mono", anchor="middle")
 
     # right: a neofetch-style readout, the GitHub half live
     width = 56
@@ -367,12 +420,7 @@ def hero(s, t):
     rows = [
         [("shivam", "live", 14, 700), ("@", "muted", 14, 400), ("github", "live", 14, 700)],
         [("─" * width, "dots", 14, 400)],
-        row("Role", "Full-Stack Developer"),
-        row("Company", "CypherSOL Fintech"),
-        row("Building", "AI features for fintech & forensics"),
-        row("Exploring", "LLM apps · RAG · voice agents"),
-        row("Stack", "TypeScript · React · Next.js · NestJS"),
-        row("AI pair programmer", "Claude Code"),
+        *[row(k, v) for k, v in HERO],
         None,
         [("— GitHub ", "muted", 14, 600), ("─" * (width - 9), "dots", 14, 400)],
         row("Contributions", f"{s['year_total']:,} last year · {s['total']:,} total", True),
@@ -383,13 +431,14 @@ def hero(s, t):
     for i, runs in enumerate(rows):
         if runs:
             g.text(312, 50 + i * 22, runs, cls="mono rise", attrs=f' style="animation-delay:{i * 0.05:.2f}s"')
-    return g.render(f"Shivam Kumar, Full-Stack Developer at CypherSOL Fintech, building with AI. "
+    return g.render(f"Shivam Kumar, Full-Stack Developer at CypherSOL Fintech, learning and building with AI. "
                     f"{s['year_total']} contributions in the last year.")
 
 
 def now_next(s, t):
     g = Svg(t, 170)
-    for c, (title, sub, items) in enumerate((("Now", "what I'm doing", NOW), ("Next", "where I'm heading", NEXT))):
+    for c, (title, sub, items) in enumerate((("Now", "what I'm doing", NOW),
+                                             ("Ambition", "where I'm heading", AMBITION))):
         x = 24 + c * 408
         color = t["accent"] if c == 0 else t["key"]
         if c == 0:
@@ -404,7 +453,61 @@ def now_next(s, t):
                   f'stroke-linecap="round" stroke-linejoin="round"/>')
             g.text(x + 20, y + 5, item, 14, "fg", cls="rise", attrs=f' style="animation-delay:{(c * 3 + i) * 0.06:.2f}s"')
     g.add(f'<path d="M420.5 28V146" stroke="{t["grid"]}"/>')
-    return g.render("Now: " + "; ".join(NOW) + ". Next: " + "; ".join(NEXT) + ".")
+    return g.render("Now: " + "; ".join(NOW) + ". Ambition: " + "; ".join(AMBITION) + ".")
+
+
+def journey(s, t):
+    """Where I am in AI: what I've built with, what I'm learning, what's next."""
+    g = Svg(t, 380)
+    g.title(24, 38, "My AI learning path", "From shipping LLM features to understanding and building AI systems end to end")
+    col_w = (W - 48) / 3
+    track_y = 82
+    marks = [col_w * i + 24 + 12 for i in range(3)]
+    # the path: done up to "learning now", then still ahead
+    g.add(f'<path d="M{marks[0]:.1f} {track_y}H{W - 24}" stroke="{t["grid"]}" stroke-width="4" stroke-linecap="round"/>')
+    g.add(f'<path class="draw" pathLength="1" d="M{marks[0]:.1f} {track_y}H{marks[1] + col_w * .45:.1f}" '
+          f'stroke="{t["accent"]}" stroke-width="4" stroke-linecap="round"/>')
+    for c, (stage, status, items) in enumerate(JOURNEY):
+        x = 24 + c * col_w
+        cx = marks[c]
+        if c == 0:      # done: filled with a check
+            g.add(f'<circle cx="{cx:.1f}" cy="{track_y}" r="10" fill="{t["accent"]}"/>'
+                  f'<path d="M{cx - 4.5:.1f} {track_y}l3 3 6-6" fill="none" stroke="{t["bg"]}" stroke-width="2" '
+                  f'stroke-linecap="round" stroke-linejoin="round"/>')
+        elif c == 1:    # in progress: ring with a pulsing core
+            g.add(f'<circle cx="{cx:.1f}" cy="{track_y}" r="10" fill="{t["bg"]}" stroke="{t["accent"]}" stroke-width="2.5"/>'
+                  f'<circle class="pulse" cx="{cx:.1f}" cy="{track_y}" r="4.5" fill="{t["live"]}"/>')
+        else:           # next: hollow
+            g.add(f'<circle cx="{cx:.1f}" cy="{track_y}" r="10" fill="{t["bg"]}" stroke="{t["rest"]}" stroke-width="2"/>')
+        g.text(x, track_y + 36, stage, 14, "fg", 600)
+        g.text(x, track_y + 52, status, 11, "muted", cls="mono")
+        for i, (name, terms) in enumerate(items):
+            y = 160 + i * 50
+            g.add(f'<g class="rise" style="animation-delay:{(c * 4 + i) * 0.05:.2f}s">')
+            g.add(f'<rect x="{x:.1f}" y="{y}" width="{col_w - 12:.1f}" height="42" rx="8" fill="{t["tile"]}"/>')
+            g.text(x + 12, y + 18, name, 13, "fg", 600)
+            g.text(x + 12, y + 34, terms, 11, "muted", cls="mono")
+            g.add("</g>")
+    return g.render("My AI learning path. " + " ".join(
+        f"{stage}: " + ", ".join(n for n, _ in items) + "." for stage, _, items in JOURNEY))
+
+
+def toolkit(s, t):
+    g = Svg(t, 342)
+    g.title(24, 38, "AI toolkit", "The assistants, models and libraries I work with")
+    tw, th, gap = (W - 48 - 4 * 12) / 5, 82, 12
+    for r, (label, tools) in enumerate(TOOLKIT):
+        y0 = 74 + r * (th + 40)
+        g.text(24, y0 + 4, label, 11, "muted", cls="mono")
+        for i, (spec, name) in enumerate(tools):
+            x, y = 24 + i * (tw + gap), y0 + 14
+            g.add(f'<g class="rise" style="animation-delay:{(r * 5 + i) * 0.04:.2f}s">')
+            g.add(f'<rect x="{x:.1f}" y="{y}" width="{tw:.1f}" height="{th}" rx="8" fill="{t["tile"]}"/>')
+            g.icon(spec, x + tw / 2 - 14, y + 14, 28, t["fg"])
+            g.text(x + tw / 2, y + 66, name, 12, "fg", 500, anchor="middle")
+            g.add("</g>")
+    g.text(24, 74 + 2 * (th + 40) + 2, [("also  ", "muted", 11, 400), (TOOLKIT_MORE, "fg", 11, 400)], cls="mono")
+    return g.render("AI toolkit: " + ", ".join(n for _, tools in TOOLKIT for _, n in tools) + ", " + TOOLKIT_MORE + ".")
 
 
 def ai(s, t):
@@ -412,9 +515,12 @@ def ai(s, t):
     g.title(24, 38, "Building with AI", "LLMs, embeddings and speech in things I've built")
     tw, th, gap = (W - 48 - 24) / 3, 130, 12
 
-    def chips(x, y, items):
+    def chips(x, y, items, max_w):
+        x0 = x
         for item in items:
             w = len(item) * 11 * 0.6 + 10
+            if x > x0 and x + w > x0 + max_w:
+                x, y = x0, y + 24
             g.add(f'<rect x="{x:.1f}" y="{y}" width="{w:.1f}" height="18" rx="9" fill="none" stroke="{t["border"]}"/>')
             g.text(x + 5, y + 13, item, 11, "muted", cls="mono")
             x += w + 6
@@ -427,19 +533,14 @@ def ai(s, t):
         g.text(x + 16, y + 46, where, 11, "key", cls="mono")
         for j, line in enumerate(wrap(what, 36)[:2]):
             g.text(x + 16, y + 70 + j * 16, line, 12)
-        chips(x + 16, y + 98, tools)
+        chips(x + 16, y + 98, tools, tw - 32)
         g.add("</g>")
 
     x, y = 24 + 2 * (tw + gap), 70 + th + gap
     g.add(f'<g class="rise" style="animation-delay:.3s">')
     g.add(f'<rect x="{x:.1f}" y="{y}" width="{tw:.1f}" height="{th}" rx="8" fill="{t["tile"]}"/>')
-    g.text(x + 16, y + 28, "My AI toolkit", 14, "fg", 600)
-    for j, name in enumerate(TOOLKIT):
-        path = icon_path(name)
-        if path:
-            g.add(f'<path transform="translate({x + 16 + j * 38:.1f} {y + 42}) scale(1)" fill="{t["fg"]}" d="{path}"/>')
-    for j, line in enumerate(TOOLKIT_MORE):
-        g.text(x + 16, y + 94 + j * 16, line, 11, "muted", cls="mono")
+    g.text(x + 16, y + 28, "AI concepts I've shipped", 14, "fg", 600)
+    chips(x + 16, y + 44, SHIPPED_CONCEPTS, tw - 32)
     g.add("</g>")
     return g.render("Building with AI: " + "; ".join(f"{n} ({', '.join(tl)})" for n, _, _, tl in AI_BUILDS) + ".")
 
@@ -648,8 +749,9 @@ def table_view(s):
 def main():
     s = summarize(fetch())
     OUT.mkdir(parents=True, exist_ok=True)
-    for name, card in (("hero", hero), ("now", now_next), ("ai", ai), ("overview", overview),
-                       ("skyline", skyline), ("rhythm", rhythm), ("years", years)):
+    for name, card in (("hero", hero), ("now", now_next), ("journey", journey), ("toolkit", toolkit),
+                       ("ai", ai), ("overview", overview), ("skyline", skyline), ("rhythm", rhythm),
+                       ("years", years)):
         for theme, t in THEMES.items():
             (OUT / f"{name}-{theme}.svg").write_text(card(s, t))
     (OUT / "stats.md").write_text(table_view(s))

@@ -1,7 +1,16 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/shiv4006/shiv4006/output/hero-dark.svg">
-  <img width="100%" alt="shivam@github: Full-Stack Developer at CypherSOL Fintech, building AI features for fintech and forensics, with live GitHub stats" src="https://raw.githubusercontent.com/shiv4006/shiv4006/output/hero-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/shiv4006/shiv4006/output/snake-dark.svg">
+  <img width="100%" alt="A snake eating my contribution graph" src="https://raw.githubusercontent.com/shiv4006/shiv4006/output/snake-light.svg">
 </picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/shiv4006/shiv4006/output/hero-dark.svg">
+  <img width="100%" alt="shivam@github: Full-Stack Developer at CypherSOL Fintech, learning LLMs, generative AI, RAG and agents, with live GitHub stats" src="https://raw.githubusercontent.com/shiv4006/shiv4006/output/hero-light.svg">
+</picture>
+
+<p align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=500&size=18&duration=2600&pause=900&color=3FB950&center=true&vCenter=true&width=640&lines=Full-Stack+Developer+%40+CypherSOL+Fintech;Learning+LLMs+%C2%B7+Generative+AI+%C2%B7+RAG;Building+with+Claude%2C+ChatGPT%2C+Codex+%26+Hugging+Face;Next+up%3A+AI+agents%2C+fine-tuning+%26+evals" alt="Full-Stack Developer at CypherSOL Fintech, learning LLMs, generative AI and RAG">
+</p>
 
 <p align="center">
   <a href="https://shivam-k.vercel.app"><img src="https://img.shields.io/badge/Portfolio-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Portfolio"></a>
@@ -12,7 +21,17 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/shiv4006/shiv4006/output/now-dark.svg">
-  <img width="100%" alt="What I'm doing now and where I'm heading next" src="https://raw.githubusercontent.com/shiv4006/shiv4006/output/now-light.svg">
+  <img width="100%" alt="Now: full-stack at CypherSOL and learning AI. Ambition: grow into an AI engineer and build generative AI products" src="https://raw.githubusercontent.com/shiv4006/shiv4006/output/now-light.svg">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/shiv4006/shiv4006/output/journey-dark.svg">
+  <img width="100%" alt="My AI learning path: built with LLM APIs, embeddings, RAG and voice AI; learning LLM fundamentals, prompt engineering, advanced RAG and generative AI; next: agents, fine-tuning, evals and LLMOps" src="https://raw.githubusercontent.com/shiv4006/shiv4006/output/journey-light.svg">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/shiv4006/shiv4006/output/toolkit-dark.svg">
+  <img width="100%" alt="AI toolkit: Claude, Claude Code, ChatGPT, Codex, Gemini, Hugging Face, LlamaIndex, Azure OpenAI, Nebius AI, Streamlit" src="https://raw.githubusercontent.com/shiv4006/shiv4006/output/toolkit-light.svg">
 </picture>
 
 <picture>
@@ -38,11 +57,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/shiv4006/shiv4006/output/years-dark.svg">
   <img width="100%" alt="Contributions by year, and private versus public work" src="https://raw.githubusercontent.com/shiv4006/shiv4006/output/years-light.svg">
-</picture>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/shiv4006/shiv4006/output/snake-dark.svg">
-  <img width="100%" alt="A snake eating my contribution graph" src="https://raw.githubusercontent.com/shiv4006/shiv4006/output/snake-light.svg">
 </picture>
 
 <p align="center">
